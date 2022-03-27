@@ -12,6 +12,8 @@ npm install
 1. Open your js console while on hnschat.
 2. Type `key` to get your session id.
 3. Type `domain` to get your desired domain id.
-4. Replace the 2 lines in `bot.js` with your id's.
-5. Launch the bot with `node bot.js`.
-6. Typing `!hns` in a channel which you and the bot are in will make the bot reply with the current HNS price.
+4. Type `conversaion` to get the current conversation id.
+5. Type `keys` to get your key pair for e2ee.
+6. Fill in the values in `config.sample.json` and rename to `config.json`.
+7. Launch the bot with `node bot.js`.
+8. Typing `!hns` in a channel which you and the bot are in will make the bot reply with the current HNS price.
