@@ -114,14 +114,32 @@ function parse(e) {
 }
 
 function reply(message, string) {
-	let data = {
-		action: "sendMessage",
-		conversation: message.conversation,
-		from: domain,
-		message: string
-	};
+	let dkey = conversations[message.conversation].key || null;
+	encryptIfNeeded(message.conversation, string, dkey).then(function(m){
+		let data = {
+			action: "sendMessage",
+			conversation: message.conversation,
+			from: domain,
+			message: m
+		};
 
-	ws("ACTION", data);
+		ws("ACTION", data);
+	});
+}
+
+async function encryptIfNeeded(conversation, message, dkey) {
+	let output = new Promise(function(resolve) {
+		if (dkey) {
+			encryptMessage(message, dkey, conversation).then(function(m){
+				resolve(m);
+			});
+		}
+		else {
+			resolve(message);
+		}
+	});
+
+	return await output;
 }
 
 function ws(command, body) {
