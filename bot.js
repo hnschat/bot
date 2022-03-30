@@ -95,12 +95,15 @@ function parse(e) {
 
 			if (Object.keys(conversations).includes(body.conversation)) {
 				messageBody(body).then(decoded => {
-					if (decoded === "!hns") {
-						hnsPrice().then(response => {
-							if (response) {
-								reply(body, "$"+response);
-							}
-						});
+					if (decoded === "whoami") {
+						// hnsPrice().then(response => {
+						// 	if (response) {
+						// 		reply(body, "$"+response);
+						// 	}
+						// });
+						console.log(body);
+						
+						reply(body, "Weareyou");
 					}
 				});
 			}
