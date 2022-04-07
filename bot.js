@@ -27,14 +27,15 @@ getUsers().then(r => {
 
 		var ready = 0;
 		Object.keys(conversations).forEach(c => {
-			if (!conversations[c].group) {
-				makeSecret(c).then(d => {
+			makeSecretIfNeeded(c).then(d => {
+				if (!conversations[c].group) {
 					ready += 1;
-					if (ready == pms) {
-						setupWebSocket();
-					}
-				});
-			}
+				}
+
+				if (ready == pms) {
+					setupWebSocket();
+				}
+			});
 		});
 	});
 });
@@ -209,8 +210,23 @@ async function api(data) {
 	return await output;
 }
 
+async function makeSecretIfNeeded(c) {
+	let output = new Promise(resolve => {
+		if (!conversations[c].group) {
+			makeSecret(c).then(r => {
+				resolve();
+			});
+		}
+		else {
+			resolve();
+		}
+	});
+
+	return await output;
+}
+
 async function makeSecret(k) {
-	let derivedKey = new Promise(resolve =>{
+	let derivedKey = new Promise(resolve => {
 		let otherUser = getOtherUser(k);
 		let otherKey = JSON.parse(otherUser.pubkey);
 
