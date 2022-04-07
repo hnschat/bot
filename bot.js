@@ -45,15 +45,21 @@ function log(m) {
 }
 
 function setupWebSocket() {
-	socket = new WebSocket("wss://ws.hns.chat");
+	if (!socket) {
+		socket = new WebSocket("wss://ws.hns.chat");
 
-	socket.onopen = e => {
-		socket.send("IDENTIFY "+session);
-	};
+		socket.onopen = e => {
+			socket.send("IDENTIFY "+session);
+		};
 
-	socket.onmessage = e => {
-		parse(e);
-	};
+		socket.onmessage = e => {
+			parse(e);
+		};
+
+		socket.onclose = e => {
+			socket = false;
+		};
+	}
 }
 
 function isGroup(id) {
