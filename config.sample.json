@@ -2,5 +2,7 @@
     "session":"your session here",
     "domain":"your domain here",
     "conversation":"optionally lock it down to a single conversation",
-    "keys":{}
+    "keys":{},
+
+    "trigger": "!"
 }

@@ -9,6 +9,8 @@ let domain = config.domain;
 let keys = config.keys;
 let conversation = config.conversation;
 
+let trigger = config.trigger;
+
 var socket;
 var users,conversations;
 
@@ -96,18 +98,18 @@ function parse(e) {
 
 	switch (command) {
 		case "MESSAGE":
+			if (body.user === domain) {
+				return;
+			}
+
 			if (conversation && body.conversation !== conversation) {
 				return;
 			}
 
 			if (Object.keys(conversations).includes(body.conversation)) {
 				messageBody(body).then(decoded => {
-					if (decoded === "!hns") {
-						hnsPrice().then(response => {
-							if (response) {
-								reply(body, "$"+response);
-							}
-						});
+					if (decoded[0] === trigger) {
+						handleCommand(body, decoded);
 					}
 				});
 			}
@@ -116,6 +118,23 @@ function parse(e) {
 		case "CONVERSATION":
 			conversations[conversation.id] = body;
 			makeSecret(body);
+			break;
+	}
+}
+
+function handleCommand(msg, message) {
+	let split = message.split(" ");
+	let command = split[0].substring(1);
+	split.shift();
+	let params = split;
+
+	switch (command) {
+		case "hns":
+			hnsPrice().then(response => {
+				if (response) {
+					reply(msg, "$"+response);
+				}
+			});
 			break;
 	}
 }
