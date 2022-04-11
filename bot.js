@@ -136,7 +136,29 @@ function handleCommand(msg, message) {
 				}
 			});
 			break;
+
+		case "theshake":
+			getShakeFeed().then(response=>{
+				if (response) {
+					let parser = new xml2js.Parser();
+					parser.parseStringPromise(response).then(function (result) {
+						const item = result.rss.channel[0].item[0];
+						const { title, description, link } = item;
+						const article = `${title}\n${description}\n${link}`;
+						reply(body,article);
+						parser.
+					}).catch(err=>{
+						// Failed to parse XML
+					});
+				}
+			}).catch(err=>{
+				// Failed to fetch
+			});
+			break;
+		
+		default: break;
 	}
+
 }
 
 function reply(message, string) {
@@ -188,6 +210,30 @@ async function hnsPrice() {
 			r.on('end', () => {
 				let json = JSON.parse(response);
 				resolve(json.handshake.usd);
+			});
+		}).on('error', e => {
+			resolve();
+		});
+	});
+
+	return await output;
+}
+
+async function getShakeFeed() {
+	let options = {
+		host: "theshake.substack.com",
+		path: "/feed",
+	}
+
+	let output = new Promise(resolve => {
+		http.get(options, r => {
+			let response = '';
+			
+			r.on('data', chunk => {
+				response += chunk;
+			});
+			r.on('end', () => {
+				resolve(response);
 			});
 		}).on('error', e => {
 			resolve();
