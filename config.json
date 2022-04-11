@@ -1,6 +1,5 @@
 {
     "session":"V2-hZchYByQ4lEi49Z9gnYLzVhycAUr4HPe",
-    "domain":"bGvrfYPl0nJR62Uy",
-    "conversation":"P8xEzhTP",
+    "domain":"TbPV8iq33EL4UXVJ",
     "keys":{"publicKeyJwk":{"crv":"P-256","ext":true,"key_ops":[],"kty":"EC","x":"I-6c0_NrGV0R0Bfqofmh727OI5WNxXT4QuYuepMRyjg","y":"6NQbZY7F2efH0WUj94l_upf3TxiBcwoZBF5jkx_HFXY"},"privateKeyJwk":{"crv":"P-256","d":"U_iszHSqLpVF5y-bzO0pS2AkeQRTUP1k2dGq9OnWjNI","ext":true,"key_ops":["deriveKey","deriveBits"],"kty":"EC","x":"I-6c0_NrGV0R0Bfqofmh727OI5WNxXT4QuYuepMRyjg","y":"6NQbZY7F2efH0WUj94l_upf3TxiBcwoZBF5jkx_HFXY"}}
 }

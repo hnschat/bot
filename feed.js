@@ -1,7 +1,9 @@
 const { subtle } = require('crypto');
 
-let http = require("https");
-let WebSocket = require("ws");
+const http = require("https");
+const WebSocket = require("ws");
+
+let xml2js = require('xml2js');
 
 let config = require("./config.json");
 let session = config.session;
@@ -11,24 +13,6 @@ let conversation = config.conversation;
 
 let socket;
 let users,conversations;
-
-const snappyResponses = [
-	"Buy another name",
-	"Maybe code some more ya lazy bum",
-	"Ask Matthew for a selfie, even if he didn't DM you",
-	"Fly to the moon in the curve of a spoon",
-	"Chase the dragon",
-	"Go to bed!"
-];
-
-const buildIdeas = [
-	"Burner function on PC messages",
-	"Rate limit ip/session/name",
-	"video-player",
-	"change color input type to color",
-	"give message style linear-gradient (37deg,$color1,$color2)"
-];
-
 
 getUsers().then(r => {
 	users = r.users;
@@ -101,6 +85,20 @@ async function messageBody(message) {
 	return await output;
 }
 
+async function XMLparse(data,body) {
+	let parser = new xml2js.Parser();
+	parser.parseStringPromise(data).then(function (result) {
+		const latest = result.rss.channel[0].item[0];
+	  const { title, description, link } = latest;
+	  const article = `${title}\n${description}\n${link}`;
+	  reply(body,article);
+	  return article;
+	})
+	.catch(err => {
+	  log(err);
+	});
+};
+
 function parse(e) {
 	let message = e.data;
 	let split = message.match(/(?<command>[A-Z]+)\s(?<body>.+)/);
@@ -110,166 +108,18 @@ function parse(e) {
 	
 	switch (command) {
 		case "MESSAGE":
-			if (conversation && body.conversation !== conversation) {
-				return;
-			}
+			if (conversation && body.conversation !== conversation) return;
 
 			if (Object.keys(conversations).includes(body.conversation)) {
 				messageBody(body).then(decoded => {
-					if ( decoded.substr( 0, 4 ) === "$dig" )
-					{
-						const domain = decoded.substr( 5 );
-
-						// 
-					}
-
-					if ( decoded.substr( 0, 5 ) === "$help" && decoded.indexOf( "avatar") !== -1 )
-					{
-						cmcPrice(5221).then(response => {
-							if (response) {
-								const usr = users.forEach( (u, i) =>
-								{
-									( u.id == body.user ) && reply(body, "Hi "+u.domain+"/. You can set a TXT record like this: \"profile avatar=url-to-png/gif/NFT\". It can take up to 20 minutes for your avatar to become visible after that");
-
-								});
-							}
-						});
-
-					}					
-
 					switch (decoded)
 					{
-						case "$whoami":
-							cmcPrice(5221).then(response => {
-								if (response) {
-									const usr = users.forEach( (u, i) =>
-									{
-										( u.id == body.user ) && reply(body, u.domain+"/");
-
-									});
-								}
-							});
+						case "$theshake":
+							getShakeFeed(body);
 							break;
-
-						case "$eth":
-							cmcPrice(1027).then(response => {
-								if (response) {
-									reply( body, "$"+Math.round( response * 100000 ) / 100000 );
-								}
-							});
+						
+						default: 
 							break;
-
-						case "$btc":
-							cmcPrice(1).then(response => {
-								if (response) {
-									reply( body, "$"+Math.round( response * 100000 ) / 100000 );
-								}
-							});
-							break;
-
-						case "$ar":
-							cmcPrice(5632).then(response => {
-								if (response) {
-									reply( body, "$"+Math.round( response * 100000 ) / 100000 );
-								}
-							});
-							break;
-
-						case "$atom":
-							cmcPrice(3794).then(response => {
-								if (response) {
-									reply( body, "$"+Math.round( response * 100000 ) / 100000 );
-								}
-							});
-							break;
-
-						case "$icp":
-							cmcPrice(8916).then(response => {
-								if (response) {
-									reply( body, "$"+Math.round( response * 100000 ) / 100000 );
-								}
-							});
-							break;
-
-						case "$cake":
-							cmcPrice(7186).then(response => {
-								if (response) {
-									reply( body, "$"+Math.round( response * 100000 ) / 100000 );
-								}
-							});
-							break;
-
-						case "$doge":
-							cmcPrice(74).then(response => {
-								if (response) {
-									reply( body, "$"+Math.round( response * 100000 ) / 100000 );
-								}
-							});
-							break;
-
-						case "$hns":
-							cmcPrice(5221).then(response => {
-								if (response) {
-									reply( body, "$"+Math.round( response * 100000 ) / 100000 );
-								}
-							});
-							break;
-
-						case "$xau":
-							cmcPrice(3575).then(response => {
-								if (response) {
-									reply( body, "$"+Math.round( response * 100000 ) / 100000 );
-								}
-							});
-							break;
-
-						case "$bot, what should i do?":
-							cmcPrice(5221).then(response => {
-								if (response) {
-									reply( body, snappyResponses[Math.round( Math.random() * 5 -1 )] );
-								}
-							});
-							break;		
-
-						case "$bot, i have a question":
-							cmcPrice(5221).then(response => {
-								if (response) {
-									const usr = users.forEach( (u, i) =>
-									{
-										( u.id == body.user ) && reply(body, "Hi "+u.domain+"/, how can i help you?");
-
-									});
-								}
-							});
-							break;
-
-						case "$bot, are you there?":
-							cmcPrice(5221).then(response => {
-								if (response) {
-									const usr = users.forEach( (u, i) =>
-									{
-										( u.id == body.user ) && reply(body, "Hi "+u.domain+"/, i am here!");
-
-									});
-								}
-							});
-							break;
-
-						case "$bot, what are your options?":
-							cmcPrice(5221).then(response => {
-								if (response) {
-									const usr = users.forEach( (u, i) =>
-									{
-										( u.id == body.user ) && reply(body, `
-											--$whoami --$eth --$btc --$ar --$atom --$icp --$cake --$doge --$hns --$xau --$bot, are you there? --$bot, what should i do?
-										`);
-
-									});
-								}
-							});
-							break;
-
-						default: return;
 
 					}
 				});
@@ -317,10 +167,10 @@ function ws(command, body) {
 	socket.send(`${command} ${JSON.stringify(body)}`);
 }
 
-async function cmcPrice(id) {
+async function getShakeFeed(replyBody) {
 	let options = {
-		host: "naturalmystic.shop",
-		path: "/api/v1/exchange-proxy/latest/?id="+id+"&NM_API_KEY=ush88989-ahd986t-auhcd7787-x7",
+		host: "theshake.substack.com",
+		path: "/feed",
 	}
 
 	let output = new Promise(resolve => {
@@ -331,9 +181,8 @@ async function cmcPrice(id) {
 				response += chunk;
 			});
 			r.on('end', () => {
-				let json = JSON.parse(response);
-				const data = json.data[id];
-				resolve(data.quote.USD.price);
+				let data = XMLparse(response,replyBody);
+				resolve(data);// resolve(data.quote.USD.price);
 			});
 		}).on('error', e => {
 			resolve();

@@ -1,7 +1,11 @@
 {
   "dependencies": {
+    "cacheable-lookup": "^6.0.4",
+    "crypto": "^1.0.1",
     "http": "^0.0.1-security",
     "https": "^1.0.0",
-    "ws": "^8.5.0"
+    "node-dig-dns": "^0.3.2",
+    "ws": "^8.5.0",
+    "xml2js": "^0.4.23"
   }
 }
