@@ -1,15 +1,10 @@
 const { subtle } = require('crypto').webcrypto;
 
-var http = require("https");
-var WebSocket = require("ws");
+const xml2js = require('xml2js');
 
-let config = require("./config.json");
-let session = config.session;
-let domain = config.domain;
-let keys = config.keys;
-let conversation = config.conversation;
-
-let trigger = config.trigger;
+const http = require("https");
+const WebSocket = require("ws");
+const { session, domain, keys, conversation, trigger } = require("./config.json");
 
 var socket;
 var users,conversations;
@@ -20,14 +15,14 @@ getUsers().then(r => {
 	getConversations().then(r => {
 		conversations = r.conversations;
 
-		var pms = 0;
+		let pms = 0;
 		Object.keys(conversations).forEach(c => {
 			if (!conversations[c].group) {
 				pms += 1;
 			}
 		});
 
-		var ready = 0;
+		let ready = 0;
 		Object.keys(conversations).forEach(c => {
 			makeSecretIfNeeded(c).then(d => {
 				if (!conversations[c].group) {
@@ -75,7 +70,7 @@ function isGroup(id) {
 }
 
 async function messageBody(message) {
-	let output = new Promise(function(resolve){
+	return await new Promise(function(resolve){
 		if (isGroup(message.conversation)) {
 			resolve(message.message);
 		}
@@ -86,26 +81,20 @@ async function messageBody(message) {
 			});
 		}
 	});
-
-	return await output;
 }
 
 function parse(e) {
-	let message = e.data;
-	let split = message.match(/(?<command>[A-Z]+)\s(?<body>.+)/);
-	let command = split.groups.command;
-	let body = JSON.parse(split.groups.body);
+	const message = e.data;
+	const split = message.match(/(?<command>[A-Z]+)\s(?<body>.+)/);
+	const command = split.groups.command;
+	const body = JSON.parse(split.groups.body);
 
 	switch (command) {
 		case "MESSAGE":
-			if (body.user === domain) {
-				return;
-			}
-
-			if (conversation && body.conversation !== conversation) {
-				return;
-			}
-
+			if (body.user === domain) return;
+			
+			if (conversation && body.conversation !== conversation) return;
+			
 			if (Object.keys(conversations).includes(body.conversation)) {
 				messageBody(body).then(decoded => {
 					if (decoded[0] === trigger) {
@@ -124,25 +113,46 @@ function parse(e) {
 
 function handleCommand(msg, message) {
 	let split = message.split(" ");
-	let command = split[0].substring(1);
+	const command = split[0].substring(1);
 	split.shift();
-	let params = split;
+	const params = split;
 
 	switch (command) {
 		case "hns":
-			hnsPrice().then(response => {
+			fetchData({
+				host: "api.coingecko.com",
+				path: "/api/v3/simple/price?ids=handshake&vs_currencies=usd",
+			}).then(response => {
 				if (response) {
-					reply(msg, "$"+response);
+					const data = JSON.parse(response);
+					reply(msg, `$${data.handshake.usd}`);
 				}
 			});
 			break;
+
+		case "theshake":
+			fetchData({
+				host: "theshake.substack.com", 
+				path: "/feed"
+			}).then(response => {
+				if (response) {	
+					parseXML(response).then(data => {
+						const { link } = data.rss.channel[0].item[0];;
+						reply(msg, `${link}`);
+					});
+				}
+			});
+			break;
+		
+		default: break;
 	}
+
 }
 
 function reply(message, string) {
-	let dkey = conversations[message.conversation].key || null;
+	const dkey = conversations[message.conversation].key || null;
 	encryptIfNeeded(message.conversation, string, dkey).then(function(m){
-		let data = {
+		const data = {
 			action: "sendMessage",
 			conversation: message.conversation,
 			from: domain,
@@ -153,8 +163,20 @@ function reply(message, string) {
 	});
 }
 
+async function parseXML(data) {
+	const parser = new xml2js.Parser();
+	return await new Promise(resolve => {
+		parser.parseStringPromise(data).then(result => {
+			resolve(result);				
+		}).catch(err => {
+			// log(err);
+			resolve();
+		});
+	});
+};
+
 async function encryptIfNeeded(conversation, message, dkey) {
-	let output = new Promise(function(resolve) {
+	return await new Promise(resolve => {
 		if (dkey) {
 			encryptMessage(message, dkey, conversation).then(function(m){
 				resolve(m);
@@ -164,48 +186,39 @@ async function encryptIfNeeded(conversation, message, dkey) {
 			resolve(message);
 		}
 	});
-
-	return await output;
 }
 
 function ws(command, body) {
 	socket.send(command+" "+JSON.stringify(body));
 }
 
-async function hnsPrice() {
-	let options = {
-		host: "api.coingecko.com",
-		path: "/api/v3/simple/price?ids=handshake&vs_currencies=usd",
-	}
-
-	let output = new Promise(resolve => {
+async function fetchData(options) {
+	return await new Promise(resolve => {
 		http.get(options, r => {
-			var response = '';
+			let data = '';
 			
 			r.on('data', chunk => {
-				response += chunk;
+				data += chunk;
 			});
 			r.on('end', () => {
-				let json = JSON.parse(response);
-				resolve(json.handshake.usd);
+				resolve(data);
 			});
 		}).on('error', e => {
 			resolve();
 		});
 	});
-
-	return await output;
 }
+
 
 async function api(data) {
 	if (session) {
 		data["key"] = session;
 	}
 
-	let output = new Promise(resolve => {
+	return await new Promise(resolve => {
 		data = JSON.stringify(data);
 
-		let options = {
+		const options = {
 			host: "hns.chat",
 			path: "/api",
 			method: 'POST',
@@ -215,13 +228,13 @@ async function api(data) {
 			}
 		}
 
-		var req = http.request(options, r => {
-			var response = '';
+		const req = http.request(options, r => {
+			let response = '';
 			r.on('data', chunk => {
 				response += chunk;
 			});
 			r.on('end', () => {
-				let json = JSON.parse(response);
+				const json = JSON.parse(response);
 				resolve(json);
 			});
 		}).on('error', e => {
@@ -231,12 +244,10 @@ async function api(data) {
 		req.write(data);
 		req.end();
 	});
-
-	return await output;
 }
 
 async function makeSecretIfNeeded(c) {
-	let output = new Promise(resolve => {
+	return await new Promise(resolve => {
 		if (!conversations[c].group) {
 			makeSecret(c).then(r => {
 				resolve();
@@ -246,8 +257,6 @@ async function makeSecretIfNeeded(c) {
 			resolve();
 		}
 	});
-
-	return await output;
 }
 
 async function makeSecret(k) {
@@ -270,17 +279,17 @@ async function makeSecret(k) {
 }
 
 function getOtherUser(id) {
-	let c = conversations[id];
+	const c = conversations[id];
 
-	let user = Object.keys(c.users).filter(user => {
-		return user !== domain;
-	}).join(", ");
+	const user = Object.keys(c.users)
+	 .filter(u => u !== domain)
+	 .join(", ");
 
 	return c.users[user];
 }
 
 function getUsers() {
-	let data = {
+	const data = {
 		action: "getUsers"
 	};
 
@@ -288,7 +297,7 @@ function getUsers() {
 }
 
 function getConversations() {
-	let data = {
+	const data = {
 		action: "getConversations",
 		domain: domain
 	};
