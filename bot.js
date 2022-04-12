@@ -6,8 +6,8 @@ const http = require("https");
 const WebSocket = require("ws");
 const { session, domain, keys, conversation, trigger } = require("./config.json");
 
-let socket;
-let users,conversations;
+var socket;
+var users,conversations;
 
 getUsers().then(r => {
 	users = r.users;
@@ -135,13 +135,12 @@ function handleCommand(msg, message) {
 				host: "theshake.substack.com", 
 				path: "/feed"
 			}).then(response => {
-	  		if (response) {	
-	  			parseXML(response).then(data => {
-	  				const item = data.rss.channel[0].item[0];
-		  			const { title, description, link } = item;
+				if (response) {	
+					parseXML(response).then(data => {
+						const { link } = data.rss.channel[0].item[0];;
 						reply(msg, `${link}`);
-	  			});
-	  		}
+					});
+				}
 			});
 			break;
 		
@@ -170,8 +169,8 @@ async function parseXML(data) {
 		parser.parseStringPromise(data).then(result => {
 			resolve(result);				
 		}).catch(err => {
-			log(err);
-			resolve(err);
+			// log(err);
+			resolve();
 		});
 	});
 };
