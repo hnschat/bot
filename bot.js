@@ -125,7 +125,21 @@ function handleCommand(msg, message) {
 			}).then(response => {
 				if (response) {
 					const data = JSON.parse(response);
-					reply(msg, `$${data.handshake.usd}`);
+					let price = data.handshake.usd;
+
+					if (params.length) {
+						let input = params[0].replace(/[^\$0-9\.]/g, '');
+						if (input[0] === "$") {
+							input = input.substring(1);
+							reply(msg, `${(input / price).toLocaleString("en-US")} HNS`);
+						}
+						else {
+							reply(msg, `$${(price * input).toLocaleString("en-US")}`);
+						}
+					}
+					else {
+						reply(msg, `$${price.toLocaleString("en-US")}`);
+					}
 				}
 			});
 			break;
