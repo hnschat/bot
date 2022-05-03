@@ -9,6 +9,29 @@ const { session, domain, keys, conversation, trigger } = require("./config.json"
 var socket;
 var users,conversations;
 
+var started = [];
+
+const channelPrice = 50;
+var channelQuestions = [
+	{ 
+		param: "name",
+		question: "What do you want the channel to be called?\n\nChannels can contain lowercase letters, numbers, and hyphens, but can't start or end with a hyphen.",
+		pattern: "^[a-z0-9-]+$"
+	},
+	{ 
+		param: "public",
+		question: `Private channels can only be accessed by SLD's on a TLD that matches the channel name. For example, a private channel named "example" would only be accesible by names such as "an.example" or "another.example"\n\nShould this channel be private or public?`,
+		answers: ["private", "public"]
+	},
+	{ 
+		param: "tldadmin",
+		question: "You will be given admin privledges on this channel.\n\nDo you own the TLD that matches this channel name and/or want to give admin access to whoever does?",
+		answers: ["no", "yes"]
+	}
+];
+
+var channelCreation = [];
+
 getUsers().then(r => {
 	users = r.users;
 
@@ -55,7 +78,13 @@ function setupWebSocket() {
 
 		socket.onclose = e => {
 			socket = false;
+
+			setTimeout(() => { 
+				setupWebSocket();
+			}, 1000);
 		};
+
+		socket.onerror = e => {}
 	}
 }
 
@@ -83,6 +112,10 @@ async function messageBody(message) {
 	});
 }
 
+function capitalize(str) {
+	return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 function parse(e) {
 	const message = e.data;
 	const split = message.match(/(?<command>[A-Z]+)\s(?<body>.+)/);
@@ -100,13 +133,101 @@ function parse(e) {
 					if (decoded[0] === trigger) {
 						handleCommand(body, decoded);
 					}
+					else {
+						if (!isGroup(body.conversation)) {
+							if (typeof channelCreation[body.user] !== "undefined") {
+								let q = channelQuestions[channelCreation[body.user].question];
+
+								if (q) {
+									if (q.pattern) {
+										const regex = new RegExp(q.pattern);
+										if (regex.test(decoded)) {
+											channelCreation[body.user].question += 1;
+											channelCreation[body.user][q.param] = decoded;
+										}
+									}
+									else if (q.answers) {
+										if (q.answers.includes(decoded.toLowerCase())) {
+											channelCreation[body.user].question += 1;
+
+											let index = q.answers.indexOf(decoded.toLowerCase());
+											channelCreation[body.user][q.param] = index;
+										}
+									}
+
+									if (channelCreation[body.user].question > channelQuestions.length - 1) {
+										let data = channelCreation[body.user];
+										data.action = "createChannel";
+										data.user = body.user;
+										delete data.question;
+										
+										api(data).then(r => {
+											if (r.success) {
+												reply(body, `That's it! Just send a payment of ${r.fee} HNS to complete your registration.\n\nIt will take roughly 30 minutes to confirm and for the channel to appear.`);
+												channelCreation[body.user]["id"] = r.id;
+											}
+											else {
+												reply(body, `${r.message} Type .channel to start over.`);
+											}
+										});
+									}
+									else {
+										let nextQ = channelQuestions[channelCreation[body.user].question];
+										let question = channelQuestions[channelCreation[body.user].question].question;
+
+										if (nextQ.answers) {
+											let answers = `[${nextQ.answers.map(capitalize).join("/")}]`;
+
+											question += "\n\n"+answers;
+										}
+										reply(body, question);
+									}
+								}
+								else {
+									try {
+										let json = JSON.parse(decoded);
+
+										if (json.hnschat) {
+											let id = channelCreation[body.user].id;
+											let tx = json.payment;
+											let amount = json.amount;
+
+											let data = {
+												action: "receivedPayment",
+												channel: id,
+												tx: tx,
+												amount: amount
+											};
+
+											api(data).then(r => {
+												if (r.success) {
+													reply(body, `You're all set! Your channel should be live within 30 minutes.`);
+													delete channelCreation[body.user];
+												}
+												else {
+													reply(body, `${r.message}`);
+												}
+											});
+										}
+									}
+									catch {}
+								}
+							}
+						}
+					}
 				});
 			}
 			break;
 
 		case "CONVERSATION":
-			conversations[conversation.id] = body;
-			makeSecret(body);
+			createConversation(body).then(() => {
+				for (s in started) {
+					if (Object.keys(body.users).includes(started[s].from)) {
+						sendMessage(body.id, started[s].message);
+						delete started[s];
+					}
+				}
+			});
 			break;
 	}
 }
@@ -157,24 +278,57 @@ function handleCommand(msg, message) {
 				}
 			});
 			break;
+
+		case "channel":
+			if (isGroup(msg.conversation)) {
+				const data = {
+					action: "startConversation",
+					from: domain,
+					to: nameForUserID(msg.user).domain,
+					message: `Creating a channel only takes a minute. You'll need to answer a few questions and then send a payment of ${channelPrice} HNS to complete the process. Type ${trigger}channel to get started.`
+				};
+
+				started[data.to] = data;
+
+				ws("ACTION", data);
+
+				reply(msg, `I've sent you a PM with more information on creating a channel.`, true);
+			}
+			else {
+				channelCreation[msg.user] = {
+					question: 0
+				}
+				reply(msg, channelQuestions[channelCreation[msg.user].question].question);
+			}
+			break;
 		
 		default: break;
 	}
 
 }
 
-function reply(message, string) {
-	const dkey = conversations[message.conversation].key || null;
-	encryptIfNeeded(message.conversation, string, dkey).then(function(m){
-		const data = {
+function sendMessage(message, string, reply=false) {
+	let conv = message.conversation || message;
+
+	const dkey = conversations[conv].key || null;
+	encryptIfNeeded(conv, string, dkey).then(function(m){
+		let data = {
 			action: "sendMessage",
-			conversation: message.conversation,
+			conversation: conv,
 			from: domain,
 			message: m
 		};
 
+		if (reply) {
+			data.replying = message.id;
+		}
+
 		ws("ACTION", data);
 	});
+}
+
+function reply(message, string, reply=false) {
+	sendMessage(message, string, reply);
 }
 
 async function parseXML(data) {
@@ -183,7 +337,6 @@ async function parseXML(data) {
 		parser.parseStringPromise(data).then(result => {
 			resolve(result);				
 		}).catch(err => {
-			// log(err);
 			resolve();
 		});
 	});
@@ -302,6 +455,14 @@ function getOtherUser(id) {
 	return c.users[user];
 }
 
+function nameForUserID(id) {
+	let user = users.filter(user => {
+		return user.id == id;
+	});
+
+	return user[0];
+}
+
 function getUsers() {
 	const data = {
 		action: "getUsers"
@@ -317,6 +478,24 @@ function getConversations() {
 	};
 
 	return api(data);
+}
+
+async function createConversation(conversation) {
+	conversations[conversation.id] = conversation;
+	
+	let output = new Promise(resolve => {
+		let name = getOtherUser(conversation.id);
+		if (name) {
+			makeSecret(conversation.id).then(() => {
+				resolve();
+			});
+		}
+		else {
+			resolve();
+		}
+	})
+
+	return await output;
 }
 
 async function deriveKey(publicKeyJwk, privateKeyJwk) {
