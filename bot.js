@@ -167,7 +167,7 @@ function parse(e) {
 												channelCreation[body.user]["id"] = r.id;
 											}
 											else {
-												reply(body, `${r.message} Type .channel to start over.`);
+												reply(body, `${r.message} Type ${trigger}channel to start over.`);
 											}
 										});
 									}
