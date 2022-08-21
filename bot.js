@@ -205,8 +205,7 @@ function handleCommand(msg, message) {
 
 	switch (true) {
 		case (command[0] === "$"):
-		case (command === "hns"):
-			const coin = command === "hns" ? "handshake" : command.substring(1);
+			const coin = command.substring(1);
 			fetchData({
 				host: `api.coingecko.com`,
 				path: `/api/v3/simple/price?ids=${coin}&vs_currencies=usd`,
@@ -224,7 +223,7 @@ function handleCommand(msg, message) {
 						let input = params[0].replace(/[^\$0-9\.]/g, '');
 						if (input[0] === "$") {
 							input = input.substring(1);
-							reply(msg, `${(input / price).toLocaleString("en-US")} ${command === "hns" ? "HNS" : coin}`);
+							reply(msg, `${(input / price).toLocaleString("en-US")} ${coin}`);
 						}
 						else {
 							reply(msg, `$${(price * input).toLocaleString("en-US")} usd`);
