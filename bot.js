@@ -10,7 +10,8 @@ const { twitter } = require("./plugins/twitter-stream/index.js");
 const channelPrice = channel.price;
 const channelQuestions = channel.questions;
 
-let socket, users, conversations;
+let socket,
+users, conversations;
 
 let started = [];
 let channelCreation = [];
@@ -236,8 +237,10 @@ function handleCommand(msg, message) {
 			break;
 
 		case (plugin("theshake") &&	(
-			(command === "theshake") ||
-			(command === "theShake") ||
+			(command === "theshake")
+			||
+			(command === "theShake")
+			||
 			(command === "TheShake")
 		)):
 			fetchData({
