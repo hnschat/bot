@@ -3,6 +3,10 @@
     "domain":"your domain here",
     "conversation":"optionally lock it down to a single conversation",
     "keys":{},
-
-    "trigger": "!"
+    "plugins": [
+        "channel-handler",
+        "theshake",
+        "twitter-stream"
+    ],
+    "trigger": "!",
 }

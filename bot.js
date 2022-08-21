@@ -1,68 +1,23 @@
 const { subtle } = require('crypto').webcrypto;
-
-const xml2js = require('xml2js');
-
 const http = require("https");
 const WebSocket = require("ws");
-const { session, domain, keys, conversation, trigger } = require("./config.json");
+const xml2js = require('xml2js');
+const { session, domain, keys, conversation, plugins, trigger } = require("./config.json");
 
-var socket;
-var users,conversations;
+const { channel } = require("./plugins/channel-creator/index.js");
+const { twitter } = require("./plugins/twitter-stream/index.js");
 
-var started = [];
+const channelPrice = channel.price;
+const channelQuestions = channel.questions;
 
-const channelPrice = 50;
-var channelQuestions = [
-	{ 
-		param: "name",
-		question: "What do you want the channel to be called?\n\nChannels can contain lowercase letters, numbers, and hyphens, but can't start or end with a hyphen.",
-		pattern: "^[a-z0-9-]+$"
-	},
-	{ 
-		param: "public",
-		question: `Private channels can only be accessed by SLD's on a TLD that matches the channel name. For example, a private channel named "example" would only be accesible by names such as "an.example" or "another.example"\n\nShould this channel be private or public?`,
-		answers: ["private", "public"]
-	},
-	{ 
-		param: "tldadmin",
-		question: "You will be given admin privledges on this channel.\n\nDo you own the TLD that matches this channel name and/or want to give admin access to whoever does?",
-		answers: ["no", "yes"]
-	}
-];
+let socket, users, conversations;
 
-var channelCreation = [];
-
-getUsers().then(r => {
-	users = r.users;
-
-	getConversations().then(r => {
-		conversations = r.conversations;
-
-		let pms = 0;
-		Object.keys(conversations).forEach(c => {
-			if (!conversations[c].group) {
-				pms += 1;
-			}
-		});
-
-		let ready = 0;
-		Object.keys(conversations).forEach(c => {
-			makeSecretIfNeeded(c).then(d => {
-				if (!conversations[c].group) {
-					ready += 1;
-				}
-
-				if (ready == pms) {
-					setupWebSocket();
-				}
-			});
-		});
-	});
-});
+let started = [];
+let channelCreation = [];
 
 function log(m) {
-	console.log(m);
-}
+	console.log(`${new Date().toLocaleString()} ${m}`);
+};
 
 function setupWebSocket() {
 	if (!socket) {
@@ -86,7 +41,11 @@ function setupWebSocket() {
 
 		socket.onerror = e => {}
 	}
-}
+};
+
+function plugin(n) {
+	return plugins.includes(n)
+};
 
 function isGroup(id) {
 	try {
@@ -99,13 +58,14 @@ function isGroup(id) {
 }
 
 async function messageBody(message) {
-	return await new Promise(function(resolve){
+	return await new Promise(resolve => {
 		if (isGroup(message.conversation)) {
 			resolve(message.message);
 		}
 		else {
-			let dkey = conversations[message.conversation].key;
-			decryptMessage(message.message, dkey, message.conversation).then(function(decoded){
+			const dkey = conversations[message.conversation].key;
+			decryptMessage(message.message, dkey, message.conversation)
+			.then(decoded => {
 				resolve(decoded);
 			});
 		}
@@ -124,10 +84,14 @@ function parse(e) {
 
 	switch (command) {
 		case "MESSAGE":
-			if (body.user === domain) return;
-			
-			if (conversation && body.conversation !== conversation) return;
-			
+			if ( 
+				(body.user === domain)
+				||
+				(conversation && body.conversation !== conversation)
+			) {
+				return;
+			};
+
 			if (Object.keys(conversations).includes(body.conversation)) {
 				messageBody(body).then(decoded => {
 					if (decoded[0] === trigger) {
@@ -161,7 +125,8 @@ function parse(e) {
 										data.user = body.user;
 										delete data.question;
 										
-										api(data).then(r => {
+										api(data)
+										.then(r => {
 											if (r.success) {
 												reply(body, `That's it! Just send a payment of ${r.fee} HNS to complete your registration.\n\nIt will take roughly 30 minutes to confirm and for the channel to appear.`);
 												channelCreation[body.user]["id"] = r.id;
@@ -188,29 +153,29 @@ function parse(e) {
 										let json = JSON.parse(decoded);
 
 										if (json.hnschat) {
-											let id = channelCreation[body.user].id;
-											let tx = json.payment;
-											let amount = json.amount;
-
-											let data = {
+											const id = channelCreation[body.user].id;
+											const tx = json.payment;
+											const amount = json.amount;
+											
+											const data = {
 												action: "receivedPayment",
 												channel: id,
 												tx: tx,
 												amount: amount
 											};
-
-											api(data).then(r => {
+											api(data)
+											.then(r => {
 												if (r.success) {
 													reply(body, `You're all set! Your channel should be live within 30 minutes.`);
 													delete channelCreation[body.user];
 												}
 												else {
 													reply(body, `${r.message}`);
-												}
+												};
 											});
-										}
+										};
 									}
-									catch {}
+									catch {};
 								}
 							}
 						}
@@ -233,39 +198,48 @@ function parse(e) {
 }
 
 function handleCommand(msg, message) {
-	let split = message.split(" ");
+	const split = message.split(" ");
 	const command = split[0].substring(1);
-	split.shift();
-	const params = split;
+	const params = split.filter((p,i)=>i>0);
 
-	switch (command) {
-		case "hns":
+	switch (true) {
+		case (command[0] === "$"):
+			const coin = command.substring(1);
 			fetchData({
-				host: "api.coingecko.com",
-				path: "/api/v3/simple/price?ids=handshake&vs_currencies=usd",
+				host: `api.coingecko.com`,
+				path: `/api/v3/simple/price?ids=${coin}&vs_currencies=usd`,
 			}).then(response => {
 				if (response) {
 					const data = JSON.parse(response);
-					let price = data.handshake.usd;
-
+					const coindata = data[coin] || null;
+					if (!coindata) {
+						reply(msg, `A list of the coins I support: https://www.coingecko.com/en/all-cryptocurrencies`)
+						return;
+					};
+					console.log(coindata);
+					const price = coindata.usd;
 					if (params.length) {
 						let input = params[0].replace(/[^\$0-9\.]/g, '');
 						if (input[0] === "$") {
 							input = input.substring(1);
-							reply(msg, `${(input / price).toLocaleString("en-US")} HNS`);
+							reply(msg, `${(input / price).toLocaleString("en-US")} ${coin}`);
 						}
 						else {
-							reply(msg, `$${(price * input).toLocaleString("en-US")}`);
-						}
+							reply(msg, `$${(price * input).toLocaleString("en-US")} usd`);
+						};
 					}
 					else {
 						reply(msg, `$${price.toLocaleString("en-US")}`);
-					}
+					};
 				}
 			});
 			break;
 
-		case "theshake":
+		case (plugin("theshake") &&	(
+			(command === "theshake") ||
+			(command === "theShake") ||
+			(command === "TheShake")
+		)):
 			fetchData({
 				host: "theshake.substack.com", 
 				path: "/feed"
@@ -279,13 +253,14 @@ function handleCommand(msg, message) {
 			});
 			break;
 
-		case "channel":
+		case (plugin("channel") && command === "channel"):
 			if (isGroup(msg.conversation)) {
+				const d = nameForUserID(msg.user).domain;
 				const data = {
 					action: "startConversation",
 					from: domain,
-					to: nameForUserID(msg.user).domain,
-					message: `Creating a channel only takes a minute. You'll need to answer a few questions and then send a payment of ${channelPrice} HNS to complete the process. Type ${trigger}channel to get started.`
+					to: d,
+					message: `Creating a channel only takes a minute. You'll need to answer a few questions and then send a payment of ${channelPrice} HNS to complete the process. Type ${trigger}${command} to get started.`
 				};
 
 				started[data.to] = data;
@@ -308,10 +283,9 @@ function handleCommand(msg, message) {
 }
 
 function sendMessage(message, string, reply=false) {
-	let conv = message.conversation || message;
-
+	const conv = message.conversation || message;
 	const dkey = conversations[conv].key || null;
-	encryptIfNeeded(conv, string, dkey).then(function(m){
+	encryptIfNeeded(conv, string, dkey).then((m) => {
 		let data = {
 			action: "sendMessage",
 			conversation: conv,
@@ -571,3 +545,45 @@ async function decryptMessage(text, derivedKey, conversation) {
     return text;
   }
 };
+
+function daemon() {
+	log("[hnschat-bot] info - initializing daemon..");
+
+	getUsers().then(r => {
+		users = r.users;
+		getConversations().then(r => {
+			conversations = r.conversations;
+			let pms = 0;
+			Object.keys(conversations).forEach(c => {
+				if (!conversations[c].group) {
+					pms += 1;
+				}
+			});
+			let ready = 0;
+			Object.keys(conversations).forEach(c => {
+				makeSecretIfNeeded(c).then(d => {
+					if (!conversations[c].group) {
+						ready += 1;
+					}
+					if (ready == pms) {
+						setupWebSocket();
+					}
+				});
+			});
+		});
+	});
+
+	if (plugin("twitter-stream")) {
+		twitter.streamConnect(0, tweet => {
+			const options = {
+				action: "sendMessage",
+				conversation: conversation,
+				from: domain,
+				message: tweet
+			};
+			ws("ACTION", options);
+		});
+	};
+};
+
+daemon();

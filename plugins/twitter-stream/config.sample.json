@@ -1,0 +1,8 @@
+{
+	"bearertoken": "Your bearer token with read-write permission here",
+	"filter": {
+		"value": "#triggerTag from:twitterName",
+		"tag": ""
+	},
+	"includetag": false
+}
