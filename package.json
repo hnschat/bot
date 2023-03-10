@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "dependencies": {
+    "ws": "^8.5.0",
+    "xml2js": "^0.4.23"
+  }
+}
