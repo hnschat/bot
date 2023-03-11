@@ -3,7 +3,7 @@ import events from "events";
 import fetch from "node-fetch";
 import xml2js from "xml2js";
 		
-export class theshake {
+export class Plugin {
 	constructor(bot) {
 		this.bot = bot;
 

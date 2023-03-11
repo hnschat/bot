@@ -2,7 +2,7 @@ import events from "events";
 
 import fetch from "node-fetch";
 		
-export class hns {
+export class Plugin {
 	constructor(bot) {
 		this.bot = bot;
 

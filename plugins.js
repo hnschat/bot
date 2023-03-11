@@ -20,7 +20,7 @@ export class PluginManager {
 						import(`${this.dir}/${file}?t=${Date.now()}`).then(p => {
 							this.plugins.push({
 								name: name,
-								plugin: new p[name](this.bot)
+								plugin: new p["Plugin"](this.bot)
 							});
 							console.log(`LOADED PLUGIN: ${name}`);
 
