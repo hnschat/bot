@@ -108,28 +108,17 @@ export class channel {
 							let json = JSON.parse(msg.message);
 
 							if (json.hnschat) {
-								/*
 								let id = this.channelCreation[msg.user].id;
 								let tx = json.payment;
 								let amount = json.amount;
 
 								let data = {
-									action: "receivedPayment",
+									user: msg.user,
 									channel: id,
 									tx: tx,
 									amount: amount
 								};
-
-								api(data).then(r => {
-									if (r.success) {
-										reply(body, `You're all set! Your channel should be live within 30 minutes.`);
-										delete this.channelCreation[msg.user];
-									}
-									else {
-										reply(body, `${r.message}`);
-									}
-								});
-								*/
+								this.bot.send("RECEIVEDPAYMENT", data);
 							}
 						}
 						catch {
