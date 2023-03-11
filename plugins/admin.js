@@ -21,8 +21,9 @@ export class admin {
 
 			switch (command) {
 				case "reload":
-					this.bot.PluginManager.plugins = [];
-					this.bot.PluginManager.loadPlugins();
+					this.bot.PluginManager.reloadPlugins().then(() => {
+						this.bot.reply(msg, "Reloaded");
+					});
 					break;
 			}
 		});

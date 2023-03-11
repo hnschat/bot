@@ -17,7 +17,7 @@ export class PluginManager {
 				if (files.length) {
 					files.forEach((file, k) => {
 						let name = file.split(".")[0];
-						import(`${this.dir}/${file}`).then(p => {
+						import(`${this.dir}/${file}?t=${Date.now()}`).then(p => {
 							this.plugins.push({
 								name: name,
 								plugin: new p[name](this.bot)
@@ -36,6 +36,16 @@ export class PluginManager {
 			});
 		});
 		return await output;
+	}
+
+	async reloadPlugins() {
+		this.plugins.forEach(plugin => {
+			let name = plugin.name;
+			plugin.plugin = null;
+			console.log(`UNLOADED PLUGIN: ${name}`);
+		});
+		this.plugins = [];
+		return await this.loadPlugins();
 	}
 
 	emit(command, msg) {
