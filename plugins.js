@@ -7,7 +7,7 @@ export class PluginManager {
 	constructor(bot) {
 		this.bot = bot;
 
-		this.dir = `${__dirname}/plugins`;
+		this.dir = `plugins`;
 		this.plugins = [];
 	}
 
@@ -17,7 +17,7 @@ export class PluginManager {
 				if (files.length) {
 					files.forEach((file, k) => {
 						let name = file.split(".")[0];
-						import(`${this.dir}/${file}?t=${Date.now()}`).then(p => {
+						import(`${url.pathToFileURL(`${this.dir}/${file}`).href}?t=${Date.now()}`).then(p => {
 							this.plugins.push({
 								name: name,
 								plugin: new p["Plugin"](this.bot)
