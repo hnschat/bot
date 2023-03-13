@@ -8,7 +8,7 @@ export class Plugin {
 
 		this.events = new events.EventEmitter();
 
-		this.commands = ["commands"];
+		this.commands = ["commands", "whoami"];
 
 		this.init();
 	}
@@ -31,6 +31,10 @@ export class Plugin {
 						commands[k] = `${this.bot.config.trigger}${command}`;
 					});
 					this.bot.reply(msg, `Here is a list of my available commands:\n${commands.join(", ")}`);
+					break;
+
+				case "whoami":
+					this.bot.reply(msg, msg.user, true);
 					break;
 			}
 		});
