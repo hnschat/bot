@@ -7,7 +7,7 @@ export class PluginManager {
 	constructor(bot) {
 		this.bot = bot;
 
-		this.dir = `plugins`;
+		this.dir = `${__dirname}plugins/`;
 		this.plugins = [];
 	}
 
