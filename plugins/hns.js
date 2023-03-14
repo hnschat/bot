@@ -8,7 +8,7 @@ export class Plugin {
 
 		this.events = new events.EventEmitter();
 
-		this.commands = ["hns", "blockheight"];
+		this.commands = ["hns", "blockheight", "height", "bh"];
 
 		this.init();
 	}
@@ -37,6 +37,8 @@ export class Plugin {
 					break;
 
 				case "blockheight":
+				case "height":
+				case "bh":
 					fetch("https://varo.domains/api?action=getInfo").then(response => response.json()).then(r => {
 						this.bot.reply(msg, r.data.blockHeight);
 					});
