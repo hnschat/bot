@@ -17,8 +17,8 @@ export class Plugin {
 		this.events.on("COMMAND", (msg, command, params) => {
 			switch (command) {
 				case "hns":
-					fetch("https://api.coingecko.com/api/v3/simple/price?ids=handshake&vs_currencies=usd").then(response => response.json()).then(r => {
-						let price = r.handshake.usd;
+					fetch("https://varo.domains/api?action=getInfo").then(response => response.json()).then(r => {
+						let price = r.data.price;
 
 						if (params.length) {
 							let input = params[0].replace(/[^\$0-9\.]/g, '');

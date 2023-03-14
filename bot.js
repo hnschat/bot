@@ -217,14 +217,19 @@ export class HNSChat {
 
 					body.message = decrypted[0];
 
-					body.isAction = false;
-					if (body.message.substring(0, this.action.length) == this.action) {
-						body.message = body.message.substring(this.action.length);
-						body.isAction = true;
-					};
+					if (typeof body.message !== "object") {
+						body.isAction = false;
+						if (body.message.substring(0, this.action.length) == this.action) {
+							body.message = body.message.substring(this.action.length);
+							body.isAction = true;
+						};
 
-					if (body.message.substring(0, this.config.trigger.length) == this.config.trigger) {
-						this.PluginManager.emit("COMMAND", body);
+						if (body.message.substring(0, this.config.trigger.length) == this.config.trigger) {
+							this.PluginManager.emit("COMMAND", body);
+						}
+						else {
+							this.PluginManager.emit(command, body);
+						}
 					}
 					else {
 						this.PluginManager.emit(command, body);
