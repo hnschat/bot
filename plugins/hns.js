@@ -24,14 +24,14 @@ export class Plugin {
 							let input = params[0].replace(/[^\$0-9\.]/g, '');
 							if (input[0] === "$") {
 								input = input.substring(1);
-								this.bot.reply(msg, `${(input / price).toLocaleString("en-US")} HNS`);
+								this.bot.reply(msg, `${(input / price).toLocaleString("en-US", { minimumFractionDigits: 2 })} HNS`);
 							}
 							else {
-								this.bot.reply(msg, `$${(price * input).toLocaleString("en-US")}`);
+								this.bot.reply(msg, `$${(price * input).toLocaleString("en-US", { minimumFractionDigits: 2 })}`);
 							}
 						}
 						else {
-							this.bot.reply(msg, `$${price.toLocaleString("en-US")}`);
+							this.bot.reply(msg, `$${price.toLocaleString("en-US", { minimumFractionDigits: 2 })}`);
 						}
 					});
 					break;
