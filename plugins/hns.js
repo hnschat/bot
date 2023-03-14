@@ -8,7 +8,7 @@ export class Plugin {
 
 		this.events = new events.EventEmitter();
 
-		this.commands = ["hns"];
+		this.commands = ["hns", "blockheight"];
 
 		this.init();
 	}
@@ -33,6 +33,12 @@ export class Plugin {
 						else {
 							this.bot.reply(msg, `$${price.toLocaleString("en-US", { minimumFractionDigits: 2 })}`);
 						}
+					});
+					break;
+
+				case "blockheight":
+					fetch("https://varo.domains/api?action=getInfo").then(response => response.json()).then(r => {
+						this.bot.reply(msg, r.data.blockHeight);
 					});
 					break;
 			}

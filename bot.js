@@ -253,7 +253,7 @@ export class HNSChat {
 	}
 
 	reply(message, string, reply=false) {
-		let split = string.split("\n\n");
+		let split = string.toString().split("\n\n");
 
 		for (var i = 0; i < split.length; i++) {
 			if (reply) {
