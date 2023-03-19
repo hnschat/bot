@@ -215,10 +215,11 @@ export class HNSChat {
 				this.decryptMessageIfNeeded(body.conversation, body).then(decrypted => {
 					let user = this.userForID(body.user).domain;
 
-					body.message = decrypted[0].toString();
+					body.message = decrypted[0];
 
 					if (typeof body.message !== "object") {
 						body.isAction = false;
+						body.message = body.message.toString();
 						if (body.message.substring(0, this.action.length) == this.action) {
 							body.message = body.message.substring(this.action.length);
 							body.isAction = true;
