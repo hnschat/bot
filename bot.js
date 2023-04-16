@@ -217,22 +217,25 @@ export class HNSChat {
 
 					body.message = decrypted[0];
 
-					if (body.message.action) {
-						body.message = body.message.action;
-						body.isAction = true;
-					}
-					else if (body.message.message) {
-						body.message = body.message.message;
-					}
+					try {
+						body.message = JSON.parse(body.message);
 
-					if (body.message.substring(0, this.config.trigger.length) == this.config.trigger) {
-						this.PluginManager.emit("COMMAND", body);
-					}
-					else {
-						this.PluginManager.emit(command, body);
-					}
+						if (body.message.action) {
+							body.message = body.message.action;
+							body.isAction = true;
+						}
+						else if (body.message.message) {
+							body.message = body.message.message;
+						}
 
-
+						if (body.message.substring(0, this.config.trigger.length) == this.config.trigger) {
+							this.PluginManager.emit("COMMAND", body);
+						}
+						else {
+							this.PluginManager.emit(command, body);
+						}
+					}
+					catch {}
 				});
 				break;
 		}
@@ -449,16 +452,16 @@ export class HNSChat {
 			return;
 		}
 
-		this.encryptMessageIfNeeded(conversation, message).then(encrypted => {
-			let msg = {
-				hnschat: 1,
-				message: encrypted
-			}
-			msg = { ...msg, ...options };
+		let msg = {
+			hnschat: 1,
+			message: message
+		}
+		msg = JSON.stringify({ ...msg, ...options });
 
+		this.encryptMessageIfNeeded(conversation, msg).then(encrypted => {
 			let data = {
 				conversation: conversation,
-				message: JSON.stringify(msg)
+				message: encrypted
 			}
 
 			if (this.replying) {
