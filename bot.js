@@ -217,24 +217,22 @@ export class HNSChat {
 
 					body.message = decrypted[0];
 
-					if (typeof body.message !== "object") {
-						body.isAction = false;
-						body.message = body.message.toString();
-						if (body.message.substring(0, this.action.length) == this.action) {
-							body.message = body.message.substring(this.action.length);
-							body.isAction = true;
-						};
+					if (body.message.action) {
+						body.message = body.message.action;
+						body.isAction = true;
+					}
+					else if (body.message.message) {
+						body.message = body.message.message;
+					}
 
-						if (body.message.substring(0, this.config.trigger.length) == this.config.trigger) {
-							this.PluginManager.emit("COMMAND", body);
-						}
-						else {
-							this.PluginManager.emit(command, body);
-						}
+					if (body.message.substring(0, this.config.trigger.length) == this.config.trigger) {
+						this.PluginManager.emit("COMMAND", body);
 					}
 					else {
 						this.PluginManager.emit(command, body);
 					}
+
+
 				});
 				break;
 		}
@@ -454,7 +452,10 @@ export class HNSChat {
 		this.encryptMessageIfNeeded(conversation, message).then(encrypted => {
 			let data = {
 				conversation: conversation,
-				message: encrypted
+				message: JSON.stringify({
+					hnschat: 1,
+					message: encrypted
+				})
 			}
 
 			if (this.replying) {
