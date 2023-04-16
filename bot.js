@@ -442,7 +442,7 @@ export class HNSChat {
 	}
 
 	sendMessage(msg, data={}) {
-		let conversation = msg.conversation;
+		let conversation = msg.conversation || msg.id;
 
 		let message = {
 			hnschat: 1

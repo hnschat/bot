@@ -150,7 +150,7 @@ export class Plugin {
 					if (msg.user) {
 						let pm = this.bot.pmWithUser(msg.user);
 						if (pm) {
-							this.bot.sendMessage(pm.id, `${msg.message} Type ${this.bot.config.trigger}channel to start over.`);
+							this.bot.sendMessage(pm, { message: `${msg.message} Type ${this.bot.config.trigger}channel to start over.` });
 						}
 					}
 					break;
@@ -159,7 +159,7 @@ export class Plugin {
 					if (msg.user) {
 						let pm = this.bot.pmWithUser(msg.user);
 						if (pm) {
-							this.bot.sendMessage(pm.id, msg.message);
+							this.bot.sendMessage(pm, { message: msg.message });
 						}
 					}
 					break;
@@ -176,9 +176,9 @@ export class Plugin {
 					if (msg.user) {
 						let pm = this.bot.pmWithUser(msg.user);
 						if (pm) {
-							this.bot.sendMessage(pm.id, `That's it! Just send a payment of ${msg.fee} HNS to complete your registration.`);
-							this.bot.sendMessage(pm.id, `If you don't have the Bob Wallet extension you can send the payment to hnschat/ (hs1qf0cxy6ukhgjlmqfhe0tpw800t2tcul4s0szwqa) and respond to this message with ONLY the transaction hash.`);
-							this.bot.sendMessage(pm.id, `Once the payment is verified it will take roughly 30 minutes to confirm and for the channel to appear.`);
+							this.bot.sendMessage(pm, { message: `That's it! Just send a payment of ${msg.fee} HNS to complete your registration.` });
+							this.bot.sendMessage(pm, { message: `If you don't have the Bob Wallet extension you can send the payment to hnschat/ (hs1qf0cxy6ukhgjlmqfhe0tpw800t2tcul4s0szwqa) and respond to this message with ONLY the transaction hash.` });
+							this.bot.sendMessage(pm, { message: `Once the payment is verified it will take roughly 30 minutes to confirm and for the channel to appear.` });
 							this.channelCreation[msg.user]["id"] = msg.id;
 						}
 					}
@@ -188,7 +188,7 @@ export class Plugin {
 					if (msg.user) {
 						let pm = this.bot.pmWithUser(msg.user);
 						if (pm) {
-							this.bot.sendMessage(pm.id, `You're all set! Your channel should be live within 30 minutes.`);
+							this.bot.sendMessage(pm, { message: `You're all set! Your channel should be live within 30 minutes.` });
 							delete this.channelCreation[msg.user];
 						}
 					}
@@ -205,7 +205,7 @@ export class Plugin {
 				this.queued = this.queued.filter(q => {
 					return q.id !== queuedMessage.user;
 				});
-				this.bot.sendMessage(msg.id, queuedMessage.message);
+				this.bot.sendMessage(msg, { message: queuedMessage.message });
 			}
 		}
 	}
