@@ -31,8 +31,6 @@ export class HNSChat {
 
 		this.replying;
 
-		this.action = "\x01ACTION ";
-
 		this.init();
 	}
 
