@@ -51,7 +51,7 @@ export class Plugin {
 							domain: this.bot.userForID(msg.user).domain
 						}
 						this.bot.send("PM", data);
-						this.bot.reply(msg, `I've sent you a PM with more information on creating a channel.`, true);
+						this.bot.reply(msg, `I've sent you a PM with more information on creating a channel.`, { reply: 1 });
 					}
 					else {
 						this.channelCreation[msg.user] = {

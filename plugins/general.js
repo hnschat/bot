@@ -34,7 +34,7 @@ export class Plugin {
 					break;
 
 				case "whoami":
-					this.bot.reply(msg, msg.user, true);
+					this.bot.reply(msg, msg.user, { reply: 1 });
 					break;
 			}
 		});

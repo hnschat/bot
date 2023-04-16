@@ -251,16 +251,16 @@ export class HNSChat {
 		this.ws.send(`PM ${JSON.stringify(data)}`);
 	}
 
-	reply(message, string, reply=false) {
+	reply(message, string, options={}) {
 		let split = string.toString().split("\n\n");
 
 		for (var i = 0; i < split.length; i++) {
-			if (reply) {
+			if (options.reply) {
 				this.replying = {
 					message: message.id
 				}
 			}
-			this.sendMessage(message.conversation, split[i]);
+			this.sendMessage(message.conversation, split[i], options);
 		}
 	}
 
@@ -444,18 +444,21 @@ export class HNSChat {
 		this.ws.send(output);
 	}
 
-	sendMessage(conversation, message) {
+	sendMessage(conversation, message, options={}) {
 		if (!message.trim().length) {
 			return;
 		}
 
 		this.encryptMessageIfNeeded(conversation, message).then(encrypted => {
+			let msg = {
+				hnschat: 1,
+				message: encrypted
+			}
+			msg = { ...msg, ...options };
+
 			let data = {
 				conversation: conversation,
-				message: JSON.stringify({
-					hnschat: 1,
-					message: encrypted
-				})
+				message: JSON.stringify(msg)
 			}
 
 			if (this.replying) {
