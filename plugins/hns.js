@@ -24,14 +24,14 @@ export class Plugin {
 							let input = params[0].replace(/[^\$0-9\.]/g, '');
 							if (input[0] === "$") {
 								input = input.substring(1);
-								this.bot.reply(msg, `${(input / price).toLocaleString("en-US", { minimumFractionDigits: 2 })} HNS`);
+								this.bot.sendMessage(msg, { message: `${(input / price).toLocaleString("en-US", { minimumFractionDigits: 2 })} HNS` });
 							}
 							else {
-								this.bot.reply(msg, `$${(price * input).toLocaleString("en-US", { minimumFractionDigits: 2 })}`);
+								this.bot.sendMessage(msg, { message: `$${(price * input).toLocaleString("en-US", { minimumFractionDigits: 2 })}` });
 							}
 						}
 						else {
-							this.bot.reply(msg, `$${price.toLocaleString("en-US", { minimumFractionDigits: 2 })}`);
+							this.bot.sendMessage(msg, { message: `$${price.toLocaleString("en-US", { minimumFractionDigits: 2 })}` });
 						}
 					});
 					break;
@@ -40,7 +40,7 @@ export class Plugin {
 				case "height":
 				case "bh":
 					fetch("https://varo.domains/api?action=getInfo").then(response => response.json()).then(r => {
-						this.bot.reply(msg, r.data.blockHeight);
+						this.bot.sendMessage(msg, { message: r.data.blockHeight });
 					});
 					break;
 			}

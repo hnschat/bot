@@ -21,7 +21,7 @@ export class Plugin {
 					fetch("https://theshake.substack.com/feed").then(response => response.text()).then(str => {
 						this.parseXML(str).then(data => {
 							const { link } = data.rss.channel[0].item[0];;
-							this.bot.reply(msg, `${link}`);
+							this.bot.sendMessage(msg, { message: link });
 						});
 			        });
 					break;

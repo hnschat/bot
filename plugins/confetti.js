@@ -15,7 +15,7 @@ export class Plugin {
 		this.events.on("COMMAND", (msg, command, params) => {
 			switch (command) {
 				case "confetti":
-					this.bot.reply(msg, "CONFETTI!", { effect: "confetti" });
+					this.bot.sendMessage(msg, { message: "CONFETTI!", effect: "confetti" });
 					break;
 			}
 		});

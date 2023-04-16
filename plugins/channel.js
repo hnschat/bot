@@ -51,13 +51,13 @@ export class Plugin {
 							domain: this.bot.userForID(msg.user).domain
 						}
 						this.bot.send("PM", data);
-						this.bot.reply(msg, `I've sent you a PM with more information on creating a channel.`, { reply: 1 });
+						this.bot.sendMessage(msg, { message: "I've sent you a PM with more information on creating a channel", reply: 1 });
 					}
 					else {
 						this.channelCreation[msg.user] = {
 							question: 0
 						}
-						this.bot.reply(msg, this.channelQuestions[this.channelCreation[msg.user].question].question);
+						this.bot.sendMessage(msg, { message: this.channelQuestions[this.channelCreation[msg.user].question].question, reply: 1 });
 					}
 					break;
 			}
@@ -100,7 +100,7 @@ export class Plugin {
 
 								question += "\n\n"+answers;
 							}
-							this.bot.reply(msg, question);
+							this.bot.sendMessage(msg, { message: question });
 						}
 					}
 					else {

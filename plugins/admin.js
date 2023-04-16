@@ -15,14 +15,14 @@ export class Plugin {
 
 	init() {
 		this.events.on("COMMAND", (msg, command, params) => {
-			if (msg.user != this.bot.config.admin) {
+			if (!this.bot.isAdmin(msg.user)) {
 				return;
 			}
 
 			switch (command) {
 				case "reload":
 					this.bot.PluginManager.reloadPlugins().then(() => {
-						this.bot.reply(msg, "Reloaded");
+						this.bot.sendMessage(msg, { message: "Reloaded" });
 					});
 					break;
 			}

@@ -70,6 +70,13 @@ export class HNSChat {
 		return array.sort((a, b) => a[by].localeCompare(b[by]));
 	}
 
+	isAdmin(user) {
+		if (this.config.admins.includes(user)) {
+			return true;
+		}
+		return false;
+	}
+
 	sendDomain() {
 		if (!this.domain) {
 			if (this.domains.length) {
@@ -254,19 +261,6 @@ export class HNSChat {
 		this.ws.send(`PM ${JSON.stringify(data)}`);
 	}
 
-	reply(message, string, options={}) {
-		let split = string.toString().split("\n\n");
-
-		for (var i = 0; i < split.length; i++) {
-			if (options.reply) {
-				this.replying = {
-					message: message.id
-				}
-			}
-			this.sendMessage(message.conversation, split[i], options);
-		}
-	}
-
 	otherUserFromPM(id) {
 		let pm = this.pmForID(id);
 		let otherUserID = this.otherUser(pm.users);
@@ -447,28 +441,31 @@ export class HNSChat {
 		this.ws.send(output);
 	}
 
-	sendMessage(conversation, message, options={}) {
-		if (!message.trim().length) {
-			return;
+	sendMessage(msg, data={}) {
+		let conversation = msg.conversation;
+
+		let message = {
+			hnschat: 1
 		}
 
-		let msg = {
-			hnschat: 1,
-			message: message
+		if (data.reply) {
+			this.replying = msg.id;
+			delete data.reply;
 		}
-		msg = JSON.stringify({ ...msg, ...options });
 
-		this.encryptMessageIfNeeded(conversation, msg).then(encrypted => {
-			let data = {
+		message = JSON.stringify({ ...message, ...data });
+
+		this.encryptMessageIfNeeded(conversation, message).then(encrypted => {
+			let m = {
 				conversation: conversation,
 				message: encrypted
 			}
 
 			if (this.replying) {
-				data.replying = this.replying.message;
+				m.replying = this.replying;
 			}
 
-			this.ws.send(`MESSAGE ${JSON.stringify(data)}`);
+			this.ws.send(`MESSAGE ${JSON.stringify(m)}`);
 
 			this.replying = null;
 		});

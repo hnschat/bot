@@ -30,11 +30,11 @@ export class Plugin {
 					commands.forEach((command, k) => {
 						commands[k] = `${this.bot.config.trigger}${command}`;
 					});
-					this.bot.reply(msg, `Here is a list of my available commands:\n${commands.join(", ")}`);
+					this.bot.sendMessage(msg, { message: `Here is a list of my available commands:\n${commands.join(", ")}` });
 					break;
 
 				case "whoami":
-					this.bot.reply(msg, msg.user, { reply: 1 });
+					this.bot.sendMessage(msg, { message: msg.user, reply: 1 });
 					break;
 			}
 		});
