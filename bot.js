@@ -219,23 +219,23 @@ export class HNSChat {
 
 					try {
 						body.message = JSON.parse(body.message);
-
-						if (body.message.action) {
-							body.message = body.message.action;
-							body.isAction = true;
-						}
-						else if (body.message.message) {
-							body.message = body.message.message;
-						}
-
-						if (body.message.substring(0, this.config.trigger.length) == this.config.trigger) {
-							this.PluginManager.emit("COMMAND", body);
-						}
-						else {
-							this.PluginManager.emit(command, body);
-						}
 					}
 					catch {}
+
+					if (body.message.action) {
+						body.message = body.message.action;
+						body.isAction = true;
+					}
+					else if (body.message.message) {
+						body.message = body.message.message;
+					}
+
+					if (body.message.substring(0, this.config.trigger.length) == this.config.trigger) {
+						this.PluginManager.emit("COMMAND", body);
+					}
+					else {
+						this.PluginManager.emit(command, body);
+					}
 				});
 				break;
 		}
