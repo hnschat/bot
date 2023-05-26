@@ -21,6 +21,7 @@ export class HNSChat {
 		this.conversation;
 
 		this.users;
+		this.active;
 
 		this.channels;
 		this.pms;
@@ -153,6 +154,7 @@ export class HNSChat {
 				this.users = body;
 				this.ws.send(`CHANNELS`);
 				this.ws.send(`PMS`);
+				this.ws.send("PING");
 				break;
 
 			case "USER":
@@ -242,6 +244,10 @@ export class HNSChat {
 						this.PluginManager.emit(command, body);
 					}
 				});
+				break;
+
+			case "PONG":
+				this.active = body.active;
 				break;
 		}
 	}
@@ -338,6 +344,10 @@ export class HNSChat {
 		}
 
 		return users;
+	}
+
+	userIsActive(id) {
+		return this.active.includes(id);
 	}
 
 	async makeSecret(conversation) {
