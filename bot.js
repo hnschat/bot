@@ -237,11 +237,13 @@ export class HNSChat {
 						body.message = body.message.message;
 					}
 
-					if (body.message.substring(0, this.config.trigger.length) == this.config.trigger) {
-						this.PluginManager.emit("COMMAND", body);
-					}
-					else {
-						this.PluginManager.emit(command, body);
+					if (typeof body.message == "string") {
+						if (body.message.substring(0, this.config.trigger.length) == this.config.trigger) {
+							this.PluginManager.emit("COMMAND", body);
+						}
+						else {
+							this.PluginManager.emit(command, body);
+						}
 					}
 				});
 				break;
