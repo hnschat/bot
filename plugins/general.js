@@ -8,7 +8,7 @@ export class Plugin {
 
 		this.events = new events.EventEmitter();
 
-		this.commands = ["commands", "whoami"];
+		this.commands = ["commands", "whoami", "whois"];
 
 		this.init();
 	}
@@ -35,6 +35,20 @@ export class Plugin {
 
 				case "whoami":
 					this.bot.sendMessage(msg, { message: msg.user, reply: 1 });
+					break;
+
+				case "whois":
+					let split = msg.message.split(" ");
+					if (split.length > 1) {
+						let user = split[1];
+						if (user[0] == "@") {
+							user = user.substring(1);
+						}
+						else {
+							user = this.bot.userForName(user).id;
+						}
+						this.bot.sendMessage(msg, { message: user, reply: 1 });
+					}
 					break;
 			}
 		});

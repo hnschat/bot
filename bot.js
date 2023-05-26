@@ -324,9 +324,15 @@ export class HNSChat {
 	}
 
 	userForName(name) {
-		return this.users.filter(u => {
+		let matches = this.users.filter(u => {
 			return u.domain == name;
-		})[0];
+		});
+
+		matches.sort((a, b) => {
+			return a.locked - b.locked;
+		});
+
+		return matches[0];
 	}
 
 	usersForConversation(id) {
