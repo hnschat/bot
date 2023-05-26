@@ -74,6 +74,12 @@ export class PluginManager {
 				});
 				break;
 		}
+
+		switch (command) {
+			case "COMMAND":
+				this.bot.startTyping(msg.conversation);
+				break;
+		}
 	}
 
 	pluginsForCommand(command) {

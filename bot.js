@@ -32,11 +32,36 @@ export class HNSChat {
 
 		this.replying;
 
+		this.typing = [];
+
 		this.init();
 	}
 
 	time() {
 		return Math.floor(Date.now() / 1000);
+	}
+
+	startTyping(conversation) {
+		if (!this.typing.includes(conversation)){
+			this.typing.push(conversation);
+		}
+		this.sendTyping();
+	}
+
+	stopTyping(conversation) {
+		this.typing = this.typing.filter(c => {
+			return c !== conversation;
+		});
+	}
+
+	sendTyping() {
+		this.typing.forEach((conversation, k) => {
+			let data = {
+				from: this.domain,
+				to: conversation
+			}
+			this.ws.send(`TYPING ${JSON.stringify(data)}`);
+		});
 	}
 
 	async init() {
@@ -481,6 +506,7 @@ export class HNSChat {
 				m.replying = this.replying;
 			}
 
+			this.stopTyping(conversation);
 			this.ws.send(`MESSAGE ${JSON.stringify(m)}`);
 
 			this.replying = null;

@@ -20,6 +20,10 @@ export class ws {
 					this.send("PING");
 				}, 30000);
 
+				this.typing = setInterval(() => {
+					this.parent.sendTyping();
+				}, 250);
+
 				resolve();
 			}
 
