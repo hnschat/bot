@@ -22,7 +22,7 @@ export class ws {
 
 				this.typing = setInterval(() => {
 					this.parent.sendTyping();
-				}, 250);
+				}, 2000);
 
 				resolve();
 			}
@@ -30,6 +30,7 @@ export class ws {
 			this.socket.onclose = (e) => {
 				console.log("DISCONNECTED");
 				clearInterval(this.ping);
+				clearInterval(this.typing);
 
 				this.parent.ready(false);
 				setTimeout(() => {
