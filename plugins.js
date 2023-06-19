@@ -49,6 +49,7 @@ export class PluginManager {
 	}
 
 	emit(command, msg) {
+		let plugins;
 		switch (command) {
 			case "COMMAND":
 				let split = msg.message.split(" ");
@@ -56,20 +57,23 @@ export class PluginManager {
 				split.shift();
 				let params = split;
 
-				this.pluginsForCommand(cmd).forEach(p => {
+				plugins = this.pluginsForCommand(cmd);
+				plugins.forEach(p => {
 					p.plugin.events.emit(command, msg, cmd, params);
 				});
 				break;
 
 			case "MESSAGE":
-				this.pluginsForType(command).forEach(p => {
+				plugins = this.pluginsForType(command);
+				plugins.forEach(p => {
 					p.plugin.events.emit(command, msg);
 				});
 				break;
 
 			case "ERROR":
 			case "SUCCESS":
-				this.pluginsForResponses(msg.type).forEach(p => {
+				plugins = this.pluginsForResponses(msg.type);
+				plugins.forEach(p => {
 					p.plugin.events.emit(command, msg);
 				});
 				break;
@@ -77,7 +81,9 @@ export class PluginManager {
 
 		switch (command) {
 			case "COMMAND":
-				this.bot.startTyping(msg.conversation);
+				if (plugins.length) {
+					this.bot.startTyping(msg.conversation);
+				}
 				break;
 		}
 	}
