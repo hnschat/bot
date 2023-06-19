@@ -24,11 +24,10 @@ export class PluginManager {
 									plugin: new p["Plugin"](this.bot)
 								});
 								console.log(`LOADED PLUGIN: ${name}`);
-
-								if (k == files.length - 1) {
-									resolve();
-								}
 							});
+						}
+						if (k == files.length - 1) {
+							resolve();
 						}
 					});
 				}
