@@ -1,14 +1,14 @@
 {
     "host": "hns.chat",
 
-    "session":"your session id here",
-    "domain":"your bot domain id here",
-    "conversation":"optionally lock it down to a single conversation",
-    "keys":{},
+    "session": "your session id here",
+    "domain": "your bot domain id here",
+    "conversation": "optionally lock it down to a single conversation",
+    "keys": {},
 
     "trigger": "!",
 
-    "admins": ["your domain id here","another domain id here"],
+    "admins": ["your domain id here", "another domain id here"],
 
     "plugins": ["admin", "general"],
 }
