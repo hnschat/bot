@@ -17,17 +17,19 @@ export class PluginManager {
 				if (files.length) {
 					files.forEach((file, k) => {
 						let name = file.split(".")[0];
-						import(`${url.pathToFileURL(`${this.dir}/${file}`).href}?t=${Date.now()}`).then(p => {
-							this.plugins.push({
-								name: name,
-								plugin: new p["Plugin"](this.bot)
-							});
-							console.log(`LOADED PLUGIN: ${name}`);
+						if (this.bot.config.plugins.includes(name)) {
+							import(`${url.pathToFileURL(`${this.dir}/${file}`).href}?t=${Date.now()}`).then(p => {
+								this.plugins.push({
+									name: name,
+									plugin: new p["Plugin"](this.bot)
+								});
+								console.log(`LOADED PLUGIN: ${name}`);
 
-							if (k == files.length - 1) {
-								resolve();
-							}
-						});
+								if (k == files.length - 1) {
+									resolve();
+								}
+							});
+						}
 					});
 				}
 				else {

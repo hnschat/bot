@@ -8,5 +8,7 @@
 
     "trigger": "!",
 
-    "admins": ["your domain id here","another domain id here"]
+    "admins": ["your domain id here","another domain id here"],
+
+    "plugins": ["admin", "general"],
 }
