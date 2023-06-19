@@ -16,6 +16,7 @@ export class Plugin {
 	init() {
 		this.events.on("COMMAND", (msg, command, params) => {
 			if (!this.bot.isAdmin(msg.user)) {
+				this.bot.stopTyping(msg.conversation);
 				return;
 			}
 

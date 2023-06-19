@@ -39,7 +39,7 @@ export class ws {
 			}
 
 			this.socket.onmessage = (e) => {
-				console.log(`IN: ${e.data}`);
+				//console.log(`IN: ${e.data}`);
 				this.parent.message(e.data);
 			}
 
@@ -52,7 +52,7 @@ export class ws {
 	}
 
 	send(message) {
-		console.log(`OUT: ${message}`);
+		//console.log(`OUT: ${message}`);
 		this.socket.send(message);
 	} 
 
