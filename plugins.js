@@ -49,7 +49,7 @@ export class PluginManager {
 		return await this.loadPlugins();
 	}
 
-	emit(command, msg) {
+	emit(command, msg=false) {
 		let plugins;
 
 		let cmd,params;
@@ -62,6 +62,7 @@ export class PluginManager {
 				plugins = this.pluginsForCommand(cmd);
 				break;
 
+			case "READY":
 			case "MESSAGE":
 				plugins = this.pluginsForType(command);
 				break;

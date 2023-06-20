@@ -28,7 +28,6 @@ export class HNSChat {
 
 		this.gotChannels;
 		this.gotPms;
-		this.gotMentions;
 
 		this.replying;
 
@@ -303,7 +302,11 @@ export class HNSChat {
 		if (!bool) {
 			this.gotChannels = false;
 			this.gotPms = false;
-			this.gotMentions = false;
+		}
+
+		if (this.gotChannels && this.gotPms) {
+			console.log("READY");
+			this.PluginManager.emit("READY");
 		}
 	}
 
