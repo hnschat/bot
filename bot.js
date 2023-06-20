@@ -2,6 +2,7 @@ import { PluginManager } from "./plugins.js";
 import { e2ee } from "./e2ee.js";
 import { ws } from "./ws.js";
 import config from "./config.json" assert { type: 'json' };
+import fetch from "node-fetch";
 
 function log(string) {
 	console.log(string);
@@ -61,6 +62,24 @@ export class HNSChat {
 			}
 			this.ws.send(`TYPING ${JSON.stringify(data)}`);
 		});
+	}
+
+	async api(data) {
+		let config = this.config;
+
+		if (this.session) {
+			data.session = this.session;
+		}
+
+		let output = new Promise(function(resolve) {
+			fetch(`https://${config.host}/api`, { method: "POST", body: JSON.stringify(data) }).then(response => response.json()).then(r => {
+				if (r) {
+					resolve(r);
+				}
+			});
+		});
+
+		return await output;
 	}
 
 	async init() {
@@ -514,6 +533,16 @@ export class HNSChat {
 
 			this.replying = null;
 		});
+	}
+
+	getMessage(id) {
+		let data = {
+			action: "getMessage",
+			domain: this.domain,
+			id: id
+		};
+
+		return this.api(data);
 	}
 }
 
