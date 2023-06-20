@@ -1,6 +1,4 @@
 import events from "events";
-
-import fetch from "node-fetch";
 		
 export class Plugin {
 	constructor(bot) {
