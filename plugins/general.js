@@ -8,7 +8,7 @@ export class Plugin {
 
 		this.events = new events.EventEmitter();
 
-		this.commands = ["commands", "whoami", "whois"];
+		this.commands = ["commands", "whoami", "whois", "whatis"];
 
 		this.init();
 	}
@@ -41,9 +41,9 @@ export class Plugin {
 					break;
 
 				case "whois":
-					let split = msg.message.split(" ");
-					if (split.length > 1) {
-						let user = split[1];
+					let userSplit = msg.message.split(" ");
+					if (userSplit.length > 1) {
+						let user = userSplit[1];
 						if (user[0] == "@") {
 							user = user.substring(1);
 						}
@@ -51,6 +51,20 @@ export class Plugin {
 							user = this.bot.userForName(user).id;
 						}
 						this.bot.sendMessage(msg, { message: user, reply: 1 });
+					}
+					break;
+
+				case "whatis":
+					let channelSplit = msg.message.split(" ");
+					if (channelSplit.length > 1) {
+						let channel = channelSplit[1];
+						if (channel[0] == "@") {
+							channel = channel.substring(1);
+						}
+						else {
+							channel = this.bot.channelForName(channel).id;
+						}
+						this.bot.sendMessage(msg, { message: channel, reply: 1 });
 					}
 					break;
 			}
