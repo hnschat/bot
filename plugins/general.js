@@ -50,6 +50,9 @@ export class Plugin {
 						}
 						this.bot.sendMessage(msg, { message: user, reply: 1 });
 					}
+					else {
+						this.bot.stopTyping(msg.conversation);
+					}
 					break;
 
 				case "whatis":
@@ -63,6 +66,9 @@ export class Plugin {
 							channel = this.bot.channelForName(channel).id;
 						}
 						this.bot.sendMessage(msg, { message: channel, reply: 1 });
+					}
+					else {
+						this.bot.stopTyping(msg.conversation);
 					}
 					break;
 			}

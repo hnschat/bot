@@ -145,6 +145,8 @@ export class HNSChat {
 
 		switch (command) {
 			case "DOMAIN":
+			case "CONNECTED":
+			case "DISCONNECTED":
 				break;
 
 			default:
