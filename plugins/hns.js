@@ -40,7 +40,7 @@ export class Plugin {
 				case "height":
 				case "bh":
 					fetch("https://varo.domains/api?action=getInfo").then(response => response.json()).then(r => {
-						this.bot.sendMessage(msg, { message: r.data.blockHeight });
+						this.bot.sendMessage(msg, { message: r.data.blockHeight, style: "fancy" });
 					});
 					break;
 			}
