@@ -143,31 +143,25 @@ export class HNSChat {
 		let command = parsed.command;
 		var body = parsed.body;
 
-		switch (command) {
-			case "DOMAIN":
-			case "CONNECTED":
-			case "DISCONNECTED":
-				break;
+		if (body) {
+			try {
+				body = JSON.parse(body);
 
-			default:
-				if (body) {
-					body = JSON.parse(body);
+				for (var k in body) {
+					try {
+						body[k] = JSON.parse(body[k]);
+					}
+					catch {}
 
-					for (var k in body) {
+					for (var i in body[k]) {
 						try {
-							body[k] = JSON.parse(body[k]);
+							body[k][i] = JSON.parse(body[k][i]);
 						}
 						catch {}
-
-						for (var i in body[k]) {
-							try {
-								body[k][i] = JSON.parse(body[k][i]);
-							}
-							catch {}
-						}
 					}
 				}
-				break;
+			}
+			catch {}
 		}
 
 		switch (command) {
