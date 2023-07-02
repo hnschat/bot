@@ -27,7 +27,11 @@ export class Plugin {
 						return;
 					}
 
-					let message = params.join(" ");
+					let message = params.join(" ").trim();
+					if (!message.length || !/[a-zA-Z]/g.test(message)) {
+						message = "Please roast me for being a dummy and sending a message with no letters.";
+					}
+
 					try {
 						this.openai.createChatCompletion({
 							model: "gpt-3.5-turbo",
