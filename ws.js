@@ -15,7 +15,6 @@ export class ws {
 
 	async connect() {
 		let connected = new Promise(resolve => {
-			
 			this.socket = new WebSocket(`wss://${this.parent.config.host}/${this.path}`);
 
 			this.socket.onopen = (e) => {
