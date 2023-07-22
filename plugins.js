@@ -40,7 +40,12 @@ export class PluginManager {
 	}
 
 	async reloadPlugins() {
-		this.plugins.forEach(plugin => {
+		this.plugins.forEach(async plugin => {
+			try {
+				await plugin.plugin.deconstruct();
+			}
+			catch {}
+
 			let name = plugin.name;
 			plugin.plugin = null;
 			console.log(`UNLOADED PLUGIN: ${name}`);
