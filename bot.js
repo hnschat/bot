@@ -31,8 +31,6 @@ export class HNSChat {
 		this.gotChannels;
 		this.gotPms;
 
-		this.replying;
-
 		this.typing = [];
 
 		this.init();
@@ -319,7 +317,7 @@ export class HNSChat {
 		}
 
 		if (this.gotChannels && this.gotPms) {
-			console.log("READY");
+			log("READY");
 			this.PluginManager.emit("READY");
 		}
 	}
@@ -499,35 +497,46 @@ export class HNSChat {
 		this.ws.send(output);
 	}
 
-	sendMessage(msg, data={}) {
+	async sendMessage(msg, data={}) {
+		let type = "MESSAGE";
 		let conversation = msg.conversation || msg.id;
+
+		let noticing,replying;
 
 		let message = {
 			hnschat: 1
 		}
 
+		if (data.notice) {
+			type = "NOTICE";
+			noticing = data.notice;
+			delete data.notice;
+		}
+
 		if (data.reply) {
-			this.replying = msg.id;
+			replying = msg.id;
 			delete data.reply;
 		}
 
 		message = JSON.stringify({ ...message, ...data });
 
-		this.encryptMessageIfNeeded(conversation, message).then(encrypted => {
-			let m = {
-				conversation: conversation,
-				message: encrypted
-			}
+		let encrypted = await this.encryptMessageIfNeeded(conversation, message);
+		
+		let m = {
+			conversation: conversation,
+			message: encrypted
+		}
 
-			if (this.replying) {
-				m.replying = this.replying;
-			}
+		if (noticing) {
+			m.notice = noticing;
+		}
 
-			this.stopTyping(conversation);
-			this.ws.send(`MESSAGE ${JSON.stringify(m)}`);
+		if (replying) {
+			m.replying = replying;
+		}
 
-			this.replying = null;
-		});
+		this.stopTyping(conversation);
+		this.ws.send(`${type} ${JSON.stringify(m)}`);
 	}
 
 	getMessage(id) {

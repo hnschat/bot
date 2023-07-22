@@ -6,11 +6,17 @@ export class ws {
 
 		this.ping;
 		this.typing;
+
+		this.path = "wss";
+		if (this.parent.config.beta) {
+			this.path += "beta";
+		}
 	}
 
 	async connect() {
 		let connected = new Promise(resolve => {
-			this.socket = new WebSocket(`wss://${this.parent.config.host}/wss`);
+			
+			this.socket = new WebSocket(`wss://${this.parent.config.host}/${this.path}`);
 
 			this.socket.onopen = (e) => {
 				console.log("CONNECTED");
