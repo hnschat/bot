@@ -10,6 +10,7 @@ function log(string) {
 
 export class HNSChat {
 	constructor() {
+		this.config = config;
 		this.PluginManager = new PluginManager(this);
 
 		this.ws = new ws(this);
@@ -83,8 +84,6 @@ export class HNSChat {
 	}
 
 	async init() {
-		this.config = config;
-
 		await this.PluginManager.loadPlugins();
 
 		this.keys = config.keys;
