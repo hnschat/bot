@@ -6,7 +6,7 @@ export class Plugin {
 
 		this.events = new events.EventEmitter();
 
-		this.commands = ["commands", "whoami", "whois", "whatis"];
+		this.commands = ["commands", "help", "whoami", "whois", "whatis"];
 
 		this.init();
 	}
@@ -15,6 +15,7 @@ export class Plugin {
 		this.events.on("COMMAND", (msg, command, params) => {
 			switch (command) {
 				case "commands":
+				case "help":
 					let commands = [];
 					this.bot.PluginManager.plugins.forEach(p => {
 						if (p.name !== "admin") {
@@ -25,7 +26,7 @@ export class Plugin {
 						}
 					});
 					commands = commands.filter(c => {
-						return c !== "commands"
+						return c !== command
 					});
 					commands.sort();
 					commands.forEach((command, k) => {
