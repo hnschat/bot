@@ -1,9 +1,9 @@
-# hnschat-bot
+# hnschat/bot
 This is an example to get you started making bots for [hnschat](https://hns.chat)
 
 # Setup
 ```
-git clone https://github.com/eskimo/hnschat-bot.git
+git clone https://github.com/hnschat/bot.git hnschat-bot
 cd hnschat-bot
 npm install
 ```
